@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #FEFCF8;
+  --color-cream: #F5EFEB;
+  --color-text-main: #222222;
+  --color-text-muted: #666666;
+  --color-accent: #B08257; /* The brown color */
+  --color-dark: #111111;
+  --color-white: #FFFFFF;
+  --color-green: #C9E6D3; /* The top banner green */
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-cream: var(--color-cream);
+  --color-text-main: var(--color-text-main);
+  --color-text-muted: var(--color-text-muted);
+  --color-accent: var(--color-accent);
+  --color-dark: var(--color-dark);
+  --color-white: var(--color-white);
+  --color-green: var(--color-green);
+
+  
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+}
+
+body {
+  background-color: var(--color-primary);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+/* Custom Utilities for smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for clean UI where needed */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
