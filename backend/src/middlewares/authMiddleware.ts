@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jsonwebtoken from 'jsonwebtoken';
-import type { User } from '@prisma/client';
 import { prisma } from '../utils/prisma';
 import { getJwtSecret } from '../utils/jwtSecret';
 
@@ -32,7 +31,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
 
-    (req as Request & { user?: User }).user = user;
+    req.user = { id: user.id, role: user.role };
     next();
   } catch (error) {
     next(error);
@@ -40,7 +39,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 };
 
 export const admin = (req: Request, res: Response, next: NextFunction): void => {
-  if ((req as Request & { user?: User }).user?.role === 'ADMIN') {
+  if (req.user?.role === 'ADMIN') {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as an admin' });

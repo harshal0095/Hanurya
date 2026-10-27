@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import * as jsonwebtoken from 'jsonwebtoken';
-import type { User } from '@prisma/client';
 import { prisma } from '../utils/prisma';
 import { getJwtSecret } from '../utils/jwtSecret';
 import { loginSchema, registerSchema } from '../utils/authValidation';
@@ -90,7 +89,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
 export const getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as Request & { user?: User }).user?.id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ message: 'Not authorized' });
       return;
