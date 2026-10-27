@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
@@ -8,14 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
 
 export default function CartPage() {
-  const { cart, removeItem, updateQuantity, getCartTotal } = useCart();
-  const [checkoutMsg, setCheckoutMsg] = useState('');
-
-  const handleCheckout = () => {
-    setCheckoutMsg("Checkout will be available soon.");
-    setTimeout(() => setCheckoutMsg(''), 4000);
-  };
-
+  const { cart, cartNotice, removeItem, updateQuantity, getCartTotal } = useCart();
   const freeShippingThreshold = 100;
   const total = getCartTotal();
   const awayFromFreeShipping = Math.max(0, freeShippingThreshold - total);
@@ -25,7 +18,8 @@ export default function CartPage() {
     <div className="bg-primary min-h-screen pt-12 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl md:text-5xl font-serif text-dark mb-12 text-center">Your Cart</h1>
-        
+        {cartNotice && <p role="status" className="mb-6 rounded-lg bg-amber-50 p-3 text-center text-sm text-amber-800">{cartNotice}</p>}
+
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center bg-white border border-dark/5">
             <ShoppingBag className="w-16 h-16 text-dark/20 mb-6" />
@@ -41,7 +35,7 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-            
+
             {/* Cart Items */}
             <div className="w-full lg:w-2/3">
               <div className="bg-white p-6 border border-dark/10 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -56,7 +50,7 @@ export default function CartPage() {
                     </p>
                   )}
                   <div className="w-full h-2 bg-dark/10 rounded-full mt-3 overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-dark transition-all duration-500 ease-out"
                       style={{ width: `${progressPercent}%` }}
                     ></div>
@@ -74,7 +68,7 @@ export default function CartPage() {
               <div className="space-y-6 md:space-y-0">
                 {cart.map((item) => (
                   <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-6 border-b border-dark/10">
-                    
+
                     {/* Mobile layout */}
                     <div className="flex md:hidden justify-between w-full mb-4">
                       <Link href={`/product/${item.slug}`} className="flex space-x-4">
@@ -96,7 +90,7 @@ export default function CartPage() {
                       <div className="flex items-center border border-dark/20">
                         <button className="px-3 py-2 text-dark/60" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="w-4 h-4" /></button>
                         <span className="w-8 text-center text-sm">{item.quantity}</span>
-                        <button className="px-3 py-2 text-dark/60" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="w-4 h-4" /></button>
+                        <button className="px-3 py-2 text-dark/60 disabled:cursor-not-allowed disabled:opacity-30" disabled={item.quantity >= item.stock} onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="w-4 h-4" /></button>
                       </div>
                       <span className="font-bold">₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}</span>
                     </div>
@@ -111,7 +105,7 @@ export default function CartPage() {
                           {item.name}
                         </Link>
                         <p className="text-sm text-dark/60 mb-3">{item.size}</p>
-                        <button 
+                        <button
                           onClick={() => removeItem(item.id)}
                           className="text-xs uppercase tracking-widest text-dark/50 hover:text-dark border-b border-dark/50 hover:border-dark transition-colors"
                         >
@@ -119,19 +113,19 @@ export default function CartPage() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="hidden md:block col-span-2 text-center font-medium">
                       ₹{(item.salePrice || item.price).toFixed(2)}
                     </div>
-                    
+
                     <div className="hidden md:flex col-span-2 justify-center">
                       <div className="flex items-center border border-dark/20">
                         <button className="px-3 py-2 text-dark/60 hover:text-dark" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="w-3 h-3" /></button>
                         <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
-                        <button className="px-3 py-2 text-dark/60 hover:text-dark" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="w-3 h-3" /></button>
+                        <button className="px-3 py-2 text-dark/60 hover:text-dark disabled:cursor-not-allowed disabled:opacity-30" disabled={item.quantity >= item.stock} onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="w-3 h-3" /></button>
                       </div>
                     </div>
-                    
+
                     <div className="hidden md:block col-span-2 text-right font-bold text-lg">
                       ₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}
                     </div>
@@ -144,7 +138,7 @@ export default function CartPage() {
             <div className="w-full lg:w-1/3">
               <div className="bg-white p-8 border border-dark/10 sticky top-32">
                 <h2 className="text-2xl font-serif text-dark mb-6 pb-4 border-b border-dark/10">Order Summary</h2>
-                
+
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
                     <span className="text-dark/70">Subtotal</span>
@@ -159,32 +153,24 @@ export default function CartPage() {
                     <span>Calculated at checkout</span>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center text-xl font-bold border-t border-dark/10 pt-6 mb-8">
                   <span>Total</span>
                   <span>₹{total.toFixed(2)}</span>
                 </div>
-                
-                {checkoutMsg && (
-                  <div className="bg-accent/10 text-accent p-3 mb-6 text-sm text-center font-medium rounded-sm">
-                    {checkoutMsg}
-                  </div>
-                )}
-                
-                <Button 
-                  size="lg" 
-                  className="w-full uppercase tracking-widest text-sm mb-4"
-                  onClick={handleCheckout}
-                >
-                  Proceed to Checkout
-                </Button>
-                
+
+                <Link href="/checkout">
+                  <Button size="lg" className="mb-4 w-full uppercase tracking-widest text-sm">
+                    Proceed to Payment
+                  </Button>
+                </Link>
+
                 <p className="text-xs text-center text-dark/50 flex items-center justify-center">
                   <span className="inline-block w-4 h-4 mr-2">🔒</span> Secure Checkout
                 </p>
               </div>
             </div>
-            
+
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Heart, Share2, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
@@ -9,6 +9,8 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { Button } from '@/components/ui/Button';
 import ProductCard from '@/components/ui/ProductCard';
+import apiClient from '@/lib/apiClient';
+import type { ApiProduct } from '@/lib/storeProducts';
 
 interface AccordionItemProps {
   title: string;
@@ -20,7 +22,7 @@ function AccordionItem({ title, children, defaultOpen = false }: AccordionItemPr
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <div className="border-b border-dark/10 py-4">
-      <button 
+      <button
         className="w-full flex items-center justify-between text-left font-serif text-lg text-dark hover:text-accent transition-colors focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -37,11 +39,46 @@ function AccordionItem({ title, children, defaultOpen = false }: AccordionItemPr
 export default function ProductClientParams({ product, relatedProducts }: { product: Product, relatedProducts: Product[] }) {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  
+  const [availableStock, setAvailableStock] = useState(Math.max(0, product.stock));
+  const [stockRefreshFailed, setStockRefreshFailed] = useState(false);
+
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
 
   const isWishlisted = isInWishlist(product.id);
+
+  useEffect(() => {
+    let isActive = true;
+    let isFetching = false;
+
+    const refreshStock = async () => {
+      if (isFetching) return;
+      isFetching = true;
+      try {
+        const { data } = await apiClient.get<ApiProduct>(`/products/${product.id}`);
+        if (isActive) {
+          setAvailableStock(Math.max(0, data.stock));
+          setStockRefreshFailed(false);
+        }
+      } catch {
+        if (isActive) setStockRefreshFailed(true);
+      } finally {
+        isFetching = false;
+      }
+    };
+
+    void refreshStock();
+    const interval = window.setInterval(() => {
+      if (!document.hidden) void refreshStock();
+    }, 15000);
+    window.addEventListener('focus', refreshStock);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshStock);
+    };
+  }, [product.id]);
 
   const toggleWishlist = () => {
     if (isWishlisted) {
@@ -52,7 +89,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    addToCart({ ...product, stock: availableStock }, quantity);
   };
 
   return (
@@ -70,7 +107,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
-          
+
           {/* Images */}
           <div className="w-full lg:w-1/2">
             <div className="relative aspect-[3/4] bg-cream mb-4 sticky top-24">
@@ -87,7 +124,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
           <div className="w-full lg:w-1/2 flex flex-col pt-4">
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-serif text-dark mb-4">{product.name}</h1>
-              
+
               <div className="flex items-center space-x-4 mb-6">
                 <div className="text-2xl font-medium">
                   {product.salePrice ? (
@@ -99,14 +136,14 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
                     <span>₹{product.price}</span>
                   )}
                 </div>
-                
+
                 <div className="w-px h-6 bg-dark/20"></div>
-                
+
                 <div className="flex items-center space-x-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'text-accent fill-accent' : 'text-dark/20'}`} 
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'text-accent fill-accent' : 'text-dark/20'}`}
                     />
                   ))}
                   <span className="text-xs text-dark/60 ml-2">({product.reviewCount})</span>
@@ -130,29 +167,36 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-dark/50 mb-3">Quantity</p>
                 <div className="flex items-center border border-dark/20 w-max">
-                  <button 
+                  <button
                     className="px-4 py-3 text-dark/60 hover:text-dark transition-colors"
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   >
                     <Minus className="w-4 h-4" />
                   </button>
                   <span className="w-12 text-center text-sm font-medium">{quantity}</span>
-                  <button 
-                    className="px-4 py-3 text-dark/60 hover:text-dark transition-colors"
+                  <button
+                    className="px-4 py-3 text-dark/60 hover:text-dark transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+                    disabled={quantity >= availableStock}
                     onClick={() => setQuantity(q => q + 1)}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
+                <p className="mt-2 text-xs text-dark/50">{availableStock} available</p>
+                {stockRefreshFailed && (
+                  <p role="status" className="mt-1 text-xs text-dark/50">
+                    Stock may have changed. Checkout will verify availability.
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex space-x-4 mb-12">
-              <Button onClick={handleAddToCart} size="lg" className="flex-1 uppercase tracking-widest text-sm">
-                Add to Cart
+              <Button onClick={handleAddToCart} disabled={availableStock === 0} size="lg" className="flex-1 uppercase tracking-widest text-sm">
+                {availableStock === 0 ? 'Out of Stock' : 'Add to Cart'}
               </Button>
-              <button 
+              <button
                 onClick={toggleWishlist}
                 className="w-14 h-14 border border-dark/20 flex items-center justify-center text-dark hover:border-accent hover:text-accent transition-colors"
               >

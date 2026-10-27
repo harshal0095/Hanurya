@@ -8,7 +8,7 @@ import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/Button';
 
 export default function WishlistPage() {
-  const { wishlist } = useWishlist();
+  const { wishlist, wishlistNotice } = useWishlist();
 
   return (
     <div className="bg-primary min-h-screen pt-12 pb-24 px-4 sm:px-6 lg:px-8">
@@ -19,6 +19,7 @@ export default function WishlistPage() {
           <p className="text-dark/70">
             {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved
           </p>
+          {wishlistNotice && <p role="status" className="mt-3 text-sm text-amber-800">{wishlistNotice}</p>}
         </div>
 
         {wishlist.length > 0 ? (

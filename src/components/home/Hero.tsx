@@ -17,7 +17,7 @@ export default function Hero() {
         className="relative w-full h-[55vh] min-h-[400px] md:absolute md:left-0 md:bottom-0 md:w-[45%] md:h-[95%] z-0"
       >
         <Image
-          src="/h1-slide-1.png"
+          src="/h1-slide-1-v3.png"
           alt="Traditional Candle"
           fill
           priority
@@ -59,7 +59,7 @@ export default function Hero() {
         className="hidden md:block absolute right-[2%] bottom-[15%] w-[26%] h-[65%] z-0 pointer-events-none"
       >
         <Image
-          src="/h1-slide-2.png"
+          src="/h1-slide-2-v3.png"
           alt="Decorative Arch"
           fill
           priority

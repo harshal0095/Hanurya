@@ -1,9 +1,13 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { collections } from '@/data/collections';
+import type { Collection } from '@/data/collections';
 
-export default function Collections() {
+export default function Collections({ collections }: { collections: Collection[] }) {
+  const [imagesWithErrors, setImagesWithErrors] = useState<Record<string, boolean>>({});
+
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-primary">
       <div className="text-center mb-16">
@@ -11,7 +15,9 @@ export default function Collections() {
         <div className="w-16 h-px bg-accent mx-auto"></div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+      {collections.length === 0 ? (
+        <p className="py-12 text-center text-dark/60">Collections will appear here as soon as they are available in the shop.</p>
+      ) : <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
         {collections.map((collection) => (
           <Link 
             key={collection.id} 
@@ -19,10 +25,16 @@ export default function Collections() {
             className="group block relative h-[400px] overflow-hidden rounded-sm"
           >
             <Image
-              src={collection.image}
+              src={imagesWithErrors[collection.id] || !collection.image ? '/h1-featured.png' : collection.image}
               alt={collection.name}
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              onError={() => {
+                if (!imagesWithErrors[collection.id]) {
+                  setImagesWithErrors((current) => ({ ...current, [collection.id]: true }));
+                }
+              }}
             />
             <div className="absolute inset-0 bg-dark/20 transition-colors duration-300 group-hover:bg-dark/30"></div>
             
@@ -37,7 +49,7 @@ export default function Collections() {
             </div>
           </Link>
         ))}
-      </div>
+      </div>}
     </section>
   );
 }

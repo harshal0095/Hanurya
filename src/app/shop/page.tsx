@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/ui/ProductCard';
-import { products, Product } from '@/data/products';
+import type { Product } from '@/data/products';
 import { collections } from '@/data/collections';
+import apiClient from '@/lib/apiClient';
+import { ApiProduct, mapApiProduct } from '@/lib/storeProducts';
+import type { Collection } from '@/data/collections';
 
 export default function Shop() {
   return (
@@ -18,20 +21,72 @@ export default function Shop() {
 function ShopContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q');
-  
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeSort, setActiveSort] = useState('featured');
-  
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [catalogRefreshFailed, setCatalogRefreshFailed] = useState(false);
+  const [availableCollections, setAvailableCollections] = useState<Collection[]>(collections);
 
   useEffect(() => {
-    let result = [...products];
+    let isActive = true;
+
+    apiClient.get<Collection[]>('/collections')
+      .then(({ data }) => {
+        if (isActive) setAvailableCollections(data);
+      })
+      .catch(() => { });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+    let isFetching = false;
+
+    const fetchCatalogProducts = async () => {
+      if (isFetching) return;
+      isFetching = true;
+      try {
+        const { data } = await apiClient.get<ApiProduct[]>('/products');
+        if (isActive) {
+          setCatalogProducts(data.map(mapApiProduct));
+          setCatalogRefreshFailed(false);
+        }
+      } catch {
+        if (isActive) setCatalogRefreshFailed(true);
+      } finally {
+        isFetching = false;
+        if (isActive) setIsLoadingProducts(false);
+      }
+    };
+
+    void fetchCatalogProducts();
+    const interval = window.setInterval(() => {
+      if (!document.hidden) void fetchCatalogProducts();
+    }, 15000);
+    window.addEventListener('focus', fetchCatalogProducts);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', fetchCatalogProducts);
+    };
+  }, []);
+
+  useEffect(() => {
+    let result = [...catalogProducts];
 
     // Search
     if (query) {
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(query.toLowerCase()) || 
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
         p.description.toLowerCase().includes(query.toLowerCase()) ||
         p.scent.toLowerCase().includes(query.toLowerCase())
       );
@@ -63,12 +118,12 @@ function ShopContent() {
     }
 
     setFilteredProducts(result);
-  }, [query, activeCategory, activeSort]);
+  }, [query, activeCategory, activeSort, catalogProducts]);
 
   return (
     <div className="bg-primary min-h-screen pt-12 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="text-center mb-12">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-4">
@@ -85,7 +140,7 @@ function ShopContent() {
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-center justify-between py-6 border-y border-dark/10 mb-8">
           <div className="flex items-center space-x-6 mb-4 sm:mb-0 w-full sm:w-auto">
-            <button 
+            <button
               className="lg:hidden flex items-center text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors"
               onClick={() => setIsFilterOpen(true)}
             >
@@ -96,11 +151,11 @@ function ShopContent() {
               Showing {filteredProducts.length} products
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <span className="text-sm uppercase tracking-widest text-dark/60 font-bold hidden sm:block">Sort by:</span>
             <div className="relative">
-              <select 
+              <select
                 className="appearance-none bg-transparent border-none text-sm font-medium pr-8 py-2 focus:ring-0 cursor-pointer"
                 value={activeSort}
                 onChange={(e) => setActiveSort(e.target.value)}
@@ -117,26 +172,26 @@ function ShopContent() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12">
-          
+
           {/* Sidebar / Filters (Desktop) */}
           <div className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-32 space-y-10">
-              
+
               {/* Collection Filter */}
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-dark mb-4 pb-2 border-b border-dark/10">Collections</h3>
                 <ul className="space-y-3">
                   <li>
-                    <button 
+                    <button
                       onClick={() => setActiveCategory(null)}
                       className={`text-sm hover:text-accent transition-colors ${activeCategory === null ? 'text-accent font-medium' : 'text-dark/70'}`}
                     >
                       All Candles
                     </button>
                   </li>
-                  {collections.map(col => (
+                  {availableCollections.map(col => (
                     <li key={col.id}>
-                      <button 
+                      <button
                         onClick={() => setActiveCategory(col.slug)}
                         className={`text-sm hover:text-accent transition-colors ${activeCategory === col.slug ? 'text-accent font-medium' : 'text-dark/70'}`}
                       >
@@ -152,7 +207,14 @@ function ShopContent() {
 
           {/* Product Grid */}
           <div className="flex-1">
-            {filteredProducts.length > 0 ? (
+            {catalogRefreshFailed && (
+              <p role="status" className="mb-4 text-center text-sm text-dark/60">
+                Inventory could not be refreshed. Checkout will verify product availability.
+              </p>
+            )}
+            {isLoadingProducts ? (
+              <p role="status" className="py-24 text-center text-dark/50">Loading products...</p>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10 sm:gap-x-6 lg:gap-x-8">
                 {filteredProducts.map(product => (
                   <ProductCard key={product.id} product={product} />
@@ -160,8 +222,10 @@ function ShopContent() {
               </div>
             ) : (
               <div className="text-center py-24">
-                <p className="text-xl text-dark/50">No products found matching your criteria.</p>
-                <button 
+                <p className="text-xl text-dark/50">
+                  {query || activeCategory ? 'No products found matching your criteria.' : 'No products are available yet.'}
+                </p>
+                <button
                   onClick={() => { setActiveCategory(null); setActiveSort('featured'); }}
                   className="mt-6 border-b border-dark text-dark hover:text-accent hover:border-accent transition-colors"
                 >
@@ -186,22 +250,22 @@ function ShopContent() {
                 <X className="w-5 h-5 text-dark" />
               </button>
             </div>
-            
+
             <div className="space-y-8">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-dark mb-4 pb-2 border-b border-dark/10">Collections</h3>
                 <ul className="space-y-3">
                   <li>
-                    <button 
+                    <button
                       onClick={() => { setActiveCategory(null); setIsFilterOpen(false); }}
                       className={`text-sm ${activeCategory === null ? 'text-accent font-medium' : 'text-dark/70'}`}
                     >
                       All Candles
                     </button>
                   </li>
-                  {collections.map(col => (
+                  {availableCollections.map(col => (
                     <li key={col.id}>
-                      <button 
+                      <button
                         onClick={() => { setActiveCategory(col.slug); setIsFilterOpen(false); }}
                         className={`text-sm ${activeCategory === col.slug ? 'text-accent font-medium' : 'text-dark/70'}`}
                       >

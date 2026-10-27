@@ -4,36 +4,32 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Product } from '@/data/products';
 
-const slides = [
-  {
-    id: 1,
-    title: "Practical Linen Knife",
-    subtitle: "Citrus & Bergamot",
-    price: "₹111.11",
-    image: "/h1-slide-1.png",
-    link: "/product/linen-knife"
-  },
-  {
-    id: 2,
-    title: "Adulting Candle",
-    subtitle: "Early Nights & Paychecks",
-    price: "₹85.00",
-    image: "/h1-slide-2.png",
-    link: "/product/adulting"
-  }
-];
-
-export default function FeaturedProducts() {
+export default function FeaturedProducts({ products }: { products: Product[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const featuredProducts = products.slice(0, 2);
+
+  if (featuredProducts.length === 0) {
+    return (
+      <section className="flex min-h-[420px] items-center justify-center bg-[#FAFAFA] px-8 py-20 text-center">
+        <div>
+          <h2 className="mb-4 font-serif text-4xl italic text-[#222]">Featured products</h2>
+          <p className="mb-6 text-sm text-gray-500">Products added to the shop will appear here.</p>
+          <Link href="/shop" className="text-xs font-bold uppercase tracking-widest text-[#222] underline underline-offset-4">Explore the shop</Link>
+        </div>
+      </section>
+    );
+  }
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setCurrentSlide((prev) => (prev + 1) % featuredProducts.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setCurrentSlide((prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length);
   };
+  const product = featuredProducts[currentSlide];
 
   return (
     <section className="flex flex-col lg:flex-row w-full min-h-[800px] bg-[#FAFAFA]">
@@ -74,12 +70,13 @@ export default function FeaturedProducts() {
               className="flex flex-col items-center"
             >
               {/* Product Image */}
-              <div className="relative w-[280px] h-[340px] hover:scale-105 transition-transform duration-500 cursor-pointer mb-12">
-                <Link href={slides[currentSlide].link}>
+              <div className="relative mb-12 h-[340px] w-[280px] cursor-pointer transition-transform duration-500 hover:scale-105">
+                <Link href={`/product/${product.slug}`}>
                   <Image
-                    src={slides[currentSlide].image}
-                    alt={slides[currentSlide].title}
+                    src={product.images[0]}
+                    alt={product.name}
                     fill
+                    sizes="280px"
                     className="object-contain"
                   />
                 </Link>
@@ -87,11 +84,11 @@ export default function FeaturedProducts() {
               
               {/* Product Details */}
               <div className="text-center">
-                <Link href={slides[currentSlide].link} className="text-[17px] font-serif text-[#222] hover:opacity-70 transition-opacity">
-                  {slides[currentSlide].title}
+                <Link href={`/product/${product.slug}`} className="text-[17px] font-serif text-[#222] hover:opacity-70 transition-opacity">
+                  {product.name}
                 </Link>
-                <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">{slides[currentSlide].subtitle}</p>
-                <p className="text-[15px] font-semibold text-[#222] mt-3">{slides[currentSlide].price}</p>
+                <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">{product.scent}</p>
+                <p className="text-[15px] font-semibold text-[#222] mt-3">₹{product.salePrice || product.price}</p>
               </div>
             </motion.div>
           </AnimatePresence>

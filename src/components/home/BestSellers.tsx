@@ -3,16 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import ProductCard from '@/components/ui/ProductCard';
-import { products } from '@/data/products';
+import type { Product } from '@/data/products';
 
-export default function BestSellers() {
-  // Use first 8 best sellers
-  const filteredProducts = products.filter(p => p.bestSeller).slice(0, 8);
-  // Pad with regular products if less than 8
-  if (filteredProducts.length < 8) {
-     filteredProducts.push(...products.filter(p => !p.bestSeller).slice(0, 8 - filteredProducts.length));
-  }
-
+export default function BestSellers({ products }: { products: Product[] }) {
+  const featuredProducts = products.slice(0, 8);
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-12 max-w-[1440px] mx-auto bg-primary">
       <div className="flex items-center justify-between mb-16">
@@ -28,11 +22,15 @@ export default function BestSellers() {
         </Link>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16">
-        {filteredProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {featuredProducts.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16">
+          {featuredProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <p className="py-12 text-center text-dark/60">Products added to the shop will appear here.</p>
+      )}
       
       <div className="mt-12 md:hidden flex justify-center">
         <Link 

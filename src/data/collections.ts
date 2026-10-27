@@ -19,7 +19,7 @@ export const collections: Collection[] = [
     slug: "aromatherapy",
     name: "Aromatherapy",
     description: "Essential oil blends designed to restore balance.",
-    image: "https://images.unsplash.com/photo-1572252516491-0391696081da?q=80&w=1000&auto=format&fit=crop"
+    image: "/h1-featured.png"
   },
   {
     id: "c3",

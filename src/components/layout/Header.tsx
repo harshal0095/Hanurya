@@ -14,17 +14,27 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const pathname = usePathname();
   const { getCartCount, isCartOpen, setIsCartOpen } = useCart();
   const { wishlist } = useWishlist();
 
   useEffect(() => {
+    const checkAuth = () => {
+      setIsLoggedIn(!!localStorage.getItem('token'));
+    };
+    checkAuth();
+
+    window.addEventListener('auth-change', checkAuth);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('auth-change', checkAuth);
+    };
   }, []);
 
   // Close mobile menu on route change
@@ -140,7 +150,7 @@ export default function Header() {
                             <li><Link href="/checkout" className="hover:text-accent transition-colors">Checkout</Link></li>
                             <li><Link href="/wishlist" className="hover:text-accent transition-colors">Wishlist</Link></li>
                             <li><Link href="/order-tracking" className="hover:text-accent transition-colors">Order Tracking</Link></li>
-                            <li><Link href="/login" className="hover:text-accent transition-colors">Login & register</Link></li>
+                            <li><Link href={isLoggedIn ? "/profile" : "/login"} className="hover:text-accent transition-colors">{isLoggedIn ? "My Profile" : "Login & register"}</Link></li>
                           </ul>
                         </div>
                       </div>
@@ -188,7 +198,7 @@ export default function Header() {
             <button onClick={() => setIsSearchOpen(true)} className="p-2 text-dark hover:text-accent transition-colors hidden lg:block">
               <Search className="w-5 h-5" />
             </button>
-            <Link href="#" className="p-2 text-dark hover:text-accent transition-colors hidden lg:block">
+            <Link href={isLoggedIn ? "/profile" : "/login"} className="p-2 text-dark hover:text-accent transition-colors hidden lg:block">
               <User className="w-5 h-5" />
             </Link>
             <button 
@@ -226,8 +236,8 @@ export default function Header() {
         </button>
         
         {/* Account */}
-        <Link 
-          href="#" 
+        <Link
+          href={isLoggedIn ? "/profile" : "/login"}
           className="flex flex-col items-center justify-center border-r border-dark/5 hover:bg-primary/30 transition-colors"
         >
           <User className="w-[22px] h-[22px] text-dark mb-1" strokeWidth={1.5} />

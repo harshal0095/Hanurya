@@ -1,9 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { collections } from '@/data/collections';
+import { getStoreCollections } from '@/lib/storeCollections';
 
-export default function CollectionsPage() {
+export default async function CollectionsPage() {
+  const collections = await getStoreCollections();
+
   return (
     <div className="bg-primary min-h-screen pt-12 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">

@@ -54,3 +54,33 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@page {
+  margin: 16mm;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  [data-print-invoice],
+  [data-print-invoice] * {
+    visibility: visible !important;
+  }
+
+  [data-print-invoice] {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  [data-print-hidden] {
+    display: none !important;
+  }
+}

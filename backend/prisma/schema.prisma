@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // USER or ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  cartItems CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model Product {
+  id             String      @id @default(uuid())
+  name           String
+  description    String
+  price          Float
+  imageUrl       String?
+  collectionSlug String?
+  collection     Collection? @relation(fields: [collectionSlug], references: [slug], onDelete: SetNull)
+  stock          Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  orderItems     OrderItem[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model CartItem {
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  updatedAt DateTime  @updatedAt
+
+  @@id([userId, productId])
+  @@index([productId])
+}
+
+model WishlistItem {
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([userId, productId])
+  @@index([productId])
+}
+
+model Collection {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  name        String
+  description String    @default("")
+  image       String    @default("/h1-featured.png")
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  products    Product[]
+}
+
+model Order {
+  id                  String      @id @default(uuid())
+  userId              String
+  user                User        @relation(fields: [userId], references: [id])
+  totalAmount         Float
+  status              String      @default("PAYMENT_REVIEW")
+  inventoryReserved   Boolean     @default(false)
+  paymentReference    String?     @unique
+  customerName        String?
+  phone               String?
+  shippingAddress     String?
+  city                String?
+  state               String?
+  postalCode          String?
+  paymentSubmittedAt  DateTime?
+  paymentReviewedAt   DateTime?
+  estimatedDeliveryAt DateTime?
+  rejectionReason     String?
+  razorpayId          String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  orderItems          OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String?
+  imageUrl  String?
+  quantity  Int
+  price     Float
+}

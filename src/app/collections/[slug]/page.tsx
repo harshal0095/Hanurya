@@ -2,18 +2,32 @@ import React from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { collections } from '@/data/collections';
-import { products } from '@/data/products';
+import { products, Product } from '@/data/products';
+import { ApiProduct, mapApiProduct } from '@/lib/storeProducts';
+import { getStoreCollections } from '@/lib/storeCollections';
 import ProductCard from '@/components/ui/ProductCard';
 
 export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const collection = collections.find(c => c.slug === resolvedParams.slug);
-  
+  const storeCollections = await getStoreCollections();
+  const collection = storeCollections.find(c => c.slug === resolvedParams.slug);
+
   if (!collection) {
     notFound();
   }
 
-  const collectionProducts = products.filter(p => p.collection === collection.slug);
+  let databaseProducts: Product[] = [];
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const response = await fetch(`${apiUrl}/products`, { cache: 'no-store' });
+    if (response.ok) {
+      databaseProducts = (await response.json() as ApiProduct[]).map(mapApiProduct);
+    }
+  } catch {
+    databaseProducts = [];
+  }
+
+  const collectionProducts = [...databaseProducts, ...products].filter((product) => product.collection === collection.slug);
 
   return (
     <div className="bg-primary min-h-screen pb-24">
@@ -36,7 +50,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-dark/10">
           <span className="text-sm text-dark/60">{collectionProducts.length} Products</span>
         </div>
-        
+
         {collectionProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 lg:gap-x-8">
             {collectionProducts.map(product => (

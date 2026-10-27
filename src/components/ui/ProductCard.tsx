@@ -32,6 +32,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (product.stock <= 0) return;
     addToCart(product, 1);
   };
 
@@ -51,7 +52,9 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="absolute top-4 right-4 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-4 group-hover:translate-x-0 z-10">
           <button 
             onClick={handleAddToCart}
-            className="w-10 h-10 bg-white shadow-sm text-dark flex items-center justify-center rounded-full hover:bg-dark hover:text-white transition-colors"
+            disabled={product.stock <= 0}
+            aria-label={product.stock <= 0 ? 'Out of stock' : 'Add to cart'}
+            className="w-10 h-10 bg-white shadow-sm text-dark flex items-center justify-center rounded-full hover:bg-dark hover:text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingBag className="w-4 h-4" />
           </button>
@@ -75,6 +78,9 @@ export default function ProductCard({ product }: { product: Product }) {
           <h3 className="font-serif text-lg text-dark group-hover:text-accent transition-colors">{product.name}</h3>
         </Link>
         <p className="text-[10px] uppercase tracking-widest text-dark/50 mt-2 mb-2 font-bold">{product.scent}</p>
+        <p className={`mb-2 text-xs ${product.stock > 0 ? 'text-dark/50' : 'font-medium text-red-600'}`}>
+          {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
+        </p>
         <div className="mt-auto flex items-center justify-center space-x-3 text-sm font-bold text-dark">
           {product.salePrice ? (
             <>
