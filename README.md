@@ -23,16 +23,16 @@ Configure values through your hosting provider's environment/secret manager. Nev
    - `CLIENT_URLS` to the exact Vercel frontend origin (for the first deploy, use the Vercel `*.vercel.app` origin; add a custom-domain origin later if needed).
    - The three Cloudinary credentials for persistent product image storage.
    - The generated `JWT_SECRET` is managed by Render; do not replace it with a public value.
-3. Deploy the Next.js project to Vercel with the repository root as the project root. Add `NEXT_PUBLIC_API_URL` as `https://<your-render-service>.onrender.com/api`, plus `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`. These `NEXT_PUBLIC_` values are public; never place API keys or secrets in them. Set them before the production build.
+3. Deploy the Next.js project to Vercel with the repository root as the project root. Optionally set `NEXT_PUBLIC_API_URL` to the actual Render service URL ending in `/api`; if omitted, the frontend uses `https://hanurya-api.onrender.com/api`, matching the service name in `render.yaml`. Also set `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`. These `NEXT_PUBLIC_` values are public; never place API keys or secrets in them. Set any overrides before the production build.
 4. After Vercel assigns the site's URL, set that exact HTTPS origin in Render's `CLIENT_URLS`, save, and redeploy the API. Do not use `*`.
 5. Verify the Render health check is green, then test registration, product loading, UPI quote, order submission, admin payment review, and status updates before sharing the website.
 
 ### Frontend
 
-- `NEXT_PUBLIC_API_URL`: HTTPS API base URL, including `/api` (for example `https://api.example.com/api`).
+- `NEXT_PUBLIC_API_URL` (optional): HTTPS API base URL, including `/api` (for example `https://api.example.com/api`). Defaults to `https://hanurya-api.onrender.com/api` in production and `http://localhost:5000/api` in development.
 - `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`: public merchant details shown in the manual UPI checkout. Set them before building/deploying; checkout stays disabled if either is missing.
 - The value is public and must not contain secrets.
-- Production builds fail unless this is a valid HTTPS API URL ending in `/api`; this prevents a deployed storefront from silently trying to call `localhost`.
+- If supplied in production, it must be a valid HTTPS API URL ending in `/api`; production never silently falls back to `localhost`.
 
 ### Backend
 

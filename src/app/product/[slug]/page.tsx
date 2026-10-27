@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { products } from '@/data/products';
 import { ApiProduct, mapApiProduct } from '@/lib/storeProducts';
 import ProductClientParams from './ProductClientParams';
+import { API_URL } from '@/lib/apiConfig';
 
 // In Next.js 15, params is a Promise
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -14,8 +15,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!product && resolvedParams.slug.startsWith('db-')) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/products`, { cache: 'no-store' });
+      const response = await fetch(`${API_URL}/products`, { cache: 'no-store' });
       if (response.ok) {
         const databaseProducts = (await response.json() as ApiProduct[]).map(mapApiProduct);
         availableProducts = [...databaseProducts, ...products];

@@ -1,6 +1,5 @@
 import { collections as defaultCollections, type Collection } from '@/data/collections';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { API_URL } from '@/lib/apiConfig';
 
 export async function getStoreCollections(): Promise<Collection[]> {
   try {

@@ -1,7 +1,6 @@
 import { collections } from '@/data/collections';
 import type { Product } from '@/data/products';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { API_URL } from '@/lib/apiConfig';
 
 export interface ApiProduct {
   id: string;

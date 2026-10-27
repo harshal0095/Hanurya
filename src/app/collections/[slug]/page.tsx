@@ -6,6 +6,7 @@ import { products, Product } from '@/data/products';
 import { ApiProduct, mapApiProduct } from '@/lib/storeProducts';
 import { getStoreCollections } from '@/lib/storeCollections';
 import ProductCard from '@/components/ui/ProductCard';
+import { API_URL } from '@/lib/apiConfig';
 
 export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
@@ -18,8 +19,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
 
   let databaseProducts: Product[] = [];
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-    const response = await fetch(`${apiUrl}/products`, { cache: 'no-store' });
+    const response = await fetch(`${API_URL}/products`, { cache: 'no-store' });
     if (response.ok) {
       databaseProducts = (await response.json() as ApiProduct[]).map(mapApiProduct);
     }

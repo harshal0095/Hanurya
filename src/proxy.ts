@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_URL } from '@/lib/apiConfig';
 
 export function proxy(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const apiOrigin = new URL(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').origin;
+  const apiOrigin = new URL(API_URL).origin;
   const directives = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDevelopment ? " 'unsafe-eval'" : ''}`,

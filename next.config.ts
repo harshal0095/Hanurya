@@ -1,16 +1,12 @@
 import type { NextConfig } from "next";
 
-if (process.env.NODE_ENV === 'production') {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (!apiUrl) {
-    throw new Error('NEXT_PUBLIC_API_URL must be set to the HTTPS production API URL before building.');
-  }
-
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+if (configuredApiUrl && process.env.NODE_ENV === 'production') {
   let productionApiUrl: URL;
   try {
-    productionApiUrl = new URL(apiUrl);
+    productionApiUrl = new URL(configuredApiUrl);
   } catch {
-    throw new Error('NEXT_PUBLIC_API_URL must be a valid HTTPS production API URL.');
+    throw new Error('NEXT_PUBLIC_API_URL must be a valid HTTPS API URL.');
   }
   if (
     productionApiUrl.protocol !== 'https:'
@@ -21,7 +17,7 @@ if (process.env.NODE_ENV === 'production') {
     || productionApiUrl.hash
     || ['localhost', '127.0.0.1'].includes(productionApiUrl.hostname)
   ) {
-    throw new Error('NEXT_PUBLIC_API_URL must be an HTTPS API origin ending in /api, not a local address.');
+    throw new Error('NEXT_PUBLIC_API_URL must be an HTTPS API URL ending in /api, not a local address.');
   }
 }
 
