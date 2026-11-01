@@ -11,9 +11,13 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import apiClient from '@/lib/apiClient';
 import type { OrderQuote } from '@/lib/orders';
+import { buildUpiPaymentLink, isUsableUpiPayeeName, isValidUpiId, resolveUpiDetails } from '@/lib/upiPayment';
 
-const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID?.trim() || '';
-const PAYEE_NAME = process.env.NEXT_PUBLIC_UPI_PAYEE_NAME?.trim() || '';
+const { upiId: UPI_ID, payeeName: PAYEE_NAME } = resolveUpiDetails(
+  process.env.NEXT_PUBLIC_UPI_ID,
+  process.env.NEXT_PUBLIC_UPI_PAYEE_NAME
+);
+const isPaymentConfigValid = isValidUpiId(UPI_ID) && isUsableUpiPayeeName(PAYEE_NAME);
 
 interface DeliveryDetails {
   customerName: string;
@@ -34,7 +38,7 @@ const emptyDeliveryDetails: DeliveryDetails = {
 };
 
 export default function CheckoutPage() {
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, getCartTotal } = useCart();
   const [quote, setQuote] = useState<OrderQuote | null>(null);
   const [quoteError, setQuoteError] = useState('');
   const [delivery, setDelivery] = useState(emptyDeliveryDetails);
@@ -42,8 +46,14 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSignedIn, setIsSignedIn] = useState(false);
   const router = useRouter();
-  const upiLink = quote && UPI_ID && PAYEE_NAME
-    ? `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${quote.total.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Hanurya order')}`
+  const payableTotal = quote?.total ?? (cart.length > 0 ? getCartTotal() : 0);
+  const upiLink = isPaymentConfigValid && quote && quote.total > 0
+    ? buildUpiPaymentLink({
+        upiId: UPI_ID,
+        payeeName: PAYEE_NAME,
+        amount: quote.total,
+        note: 'Hanurya order',
+      })
     : '';
 
   useEffect(() => {
@@ -125,21 +135,26 @@ export default function CheckoutPage() {
                 <p className="mb-7 text-sm text-dark/60">The order amount is included in the QR code and will be prefilled in your UPI app. The admin will check your payment before confirming the order.</p>
 
                 {quoteError && <p role="alert" className="mb-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">{quoteError}</p>}
-                {!quote && !quoteError && <p role="status" className="py-6 text-sm text-dark/60">Checking current product prices and availability…</p>}
+                {!quote && !quoteError && cart.length > 0 && (
+                  <p role="status" className="py-6 text-sm text-dark/60">Checking current product prices and availability…</p>
+                )}
 
-                {quote && (!UPI_ID || !PAYEE_NAME) && (
+                {payableTotal > 0 && !isPaymentConfigValid && (
                   <p role="alert" className="mb-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
-                    UPI payments are temporarily unavailable. Please contact the store before placing your order.
+                    UPI payments are unavailable because the store payment details are missing or invalid. Please contact the store; do not pay to a placeholder account.
                   </p>
                 )}
-                {quote && UPI_ID && PAYEE_NAME && (
+                {upiLink && (
                   <div className="flex flex-col items-center border-t border-dark/10 pt-7">
                     <div className="mb-5 bg-white p-3 ring-1 ring-dark/10">
                       <QRCodeSVG value={upiLink} size={220} level="M" includeMargin />
                     </div>
-                    <p className="mb-1 text-3xl font-semibold text-dark">₹{quote.total.toFixed(2)}</p>
+                    <p className="mb-1 text-3xl font-semibold text-dark">₹{quote?.total.toFixed(2)}</p>
                     <p className="mb-2 text-sm text-dark/60">Pay to {PAYEE_NAME}</p>
-                    <p className="mb-5 text-xs text-dark/50">Scan with any UPI app. The amount is prefilled automatically.</p>
+                    <p className="mb-2 break-all font-mono text-xs text-dark/60">UPI ID: {UPI_ID}</p>
+                    <p className="mb-5 max-w-sm text-center text-xs text-dark/50">
+                      Verify the payee name, UPI ID, and amount in your UPI app before approving. The amount is prefilled automatically.
+                    </p>
                     <a href={upiLink} className="inline-flex h-11 items-center justify-center gap-2 bg-dark px-5 text-sm font-medium text-white hover:bg-dark/90 sm:hidden">
                       <Smartphone className="h-4 w-4" /> Open UPI app
                     </a>
@@ -174,7 +189,7 @@ export default function CheckoutPage() {
                   <Input label="State" required maxLength={100} autoComplete="address-level1" value={delivery.state} onChange={(event) => updateDelivery('state', event.target.value)} />
                   <Input label="Postal code" required maxLength={12} autoComplete="postal-code" value={delivery.postalCode} onChange={(event) => updateDelivery('postalCode', event.target.value)} />
                 </div>
-                <Button type="submit" isLoading={isSubmitting} disabled={!quote || !isSignedIn || !UPI_ID || !PAYEE_NAME} className="w-full">
+                <Button type="submit" isLoading={isSubmitting} disabled={!quote || !isSignedIn || !isPaymentConfigValid} className="w-full">
                   I have paid — submit for admin verification
                 </Button>
               </form>
@@ -191,10 +206,19 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                 </div>
-              ) : <p className="mb-5 text-sm text-dark/50">Verifying current prices…</p>}
+              ) : (
+                <div className="mb-5 space-y-3">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex justify-between gap-4 text-sm">
+                      <span className="text-dark/70">{item.name} × {item.quantity}</span>
+                      <span className="shrink-0 text-dark">₹{((item.salePrice || item.price) * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-between border-t border-dark/10 pt-4 font-semibold text-dark">
                 <span>Total</span>
-                <span>{quote ? `₹${quote.total.toFixed(2)}` : '—'}</span>
+                <span>{payableTotal > 0 ? `₹${payableTotal.toFixed(2)}` : '—'}</span>
               </div>
               <p className="mt-4 text-xs leading-relaxed text-dark/50">Delivery is estimated within 7 days after the admin confirms your payment.</p>
             </aside>

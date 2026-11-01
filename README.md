@@ -4,7 +4,7 @@ Hanurya is a Next.js storefront with an Express API and a PostgreSQL database.
 
 ## Local development
 
-1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL`.
+1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_UPI_ID`, and `NEXT_PUBLIC_UPI_PAYEE_NAME` to the active UPI account and its bank-verified name.
 2. Copy `backend/.env.example` to `backend/.env` and set `DATABASE_URL`.
 3. Install dependencies with `npm ci` in the repository root and `npm ci` in `backend`.
 4. Start the API from `backend` with `npm run dev`.
@@ -34,7 +34,7 @@ Configure values through your hosting provider's environment/secret manager. Nev
 ### Frontend
 
 - `NEXT_PUBLIC_API_URL` (optional): HTTPS API base URL, including `/api` (for example `https://api.example.com/api`). Defaults to `https://hanurya-api.onrender.com/api` in production and `http://localhost:5000/api` in development.
-- `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`: public merchant details shown in the manual UPI checkout. Set them before building/deploying; checkout stays disabled if either is missing.
+- `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`: public merchant details shown in the manual UPI checkout. Set them to the active UPI ID and its bank-verified account name before building/deploying. Checkout does not substitute a default account or name if either value is missing or invalid.
 - The value is public and must not contain secrets.
 - If supplied in production, it must be a valid HTTPS API URL ending in `/api`; production never silently falls back to `localhost`.
 
@@ -71,7 +71,7 @@ The bootstrap script refuses to run if an administrator already exists and never
 
 ## Manual UPI orders
 
-Checkout requests an authoritative product/stock quote from the API, collects delivery details, and stores the order in the customer's account with `PAYMENT_REVIEW` status. Customers do not need to enter a UPI transaction reference; admins match the QR payment using the amount, submission time, and customer details. The customer-facing order page refreshes automatically while open.
+Checkout requests an authoritative product/stock quote from the API before generating a QR code; its UPI link uses that exact quoted amount and the configured merchant details. The receiving UPI app/bank must still verify the account name and UPI ID before the customer approves payment. Checkout collects delivery details and stores the order in the customer's account with `PAYMENT_REVIEW` status. Customers do not need to enter a UPI transaction reference; admins match the QR payment using the amount, submission time, and customer details. The customer-facing order page refreshes automatically while open.
 
 In the admin dashboard's **Orders** section, verify each reference directly in the merchant's payment account before choosing **Verify payment & confirm**. Confirmation reserves product stock and starts a seven-day delivery estimate; the customer then sees **Order confirmed**. Admins can progress accepted orders through preparing, shipped, and delivered. Rejected payments are not automatically refunded, so handle any refund separately and contact the customer.
 
