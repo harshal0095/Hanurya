@@ -27,6 +27,7 @@ model Product {
   description    String
   price          Float
   imageUrl       String?
+  additionalImages String[]    @default([])
   collectionSlug String?
   collection     Collection? @relation(fields: [collectionSlug], references: [slug], onDelete: SetNull)
   stock          Int         @default(0)

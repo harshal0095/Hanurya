@@ -2,6 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { getUploadedImageUrl } from '../utils/cloudinary';
 
+function getProductImageFiles(req: Request): {
+  image?: Express.Multer.File;
+  additionalImages: Express.Multer.File[];
+} {
+  const files = req.files;
+  if (!files || Array.isArray(files)) return { additionalImages: [] };
+
+  return {
+    image: files.image?.[0],
+    additionalImages: files.additionalImages ?? [],
+  };
+}
+
 // @desc    Get all products
 // @route   GET /api/products
 // @access  Public
@@ -57,7 +70,9 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       return;
     }
 
-    const imageUrl = req.file ? await getUploadedImageUrl(req.file) : null;
+    const { image, additionalImages } = getProductImageFiles(req);
+    const imageUrl = image ? await getUploadedImageUrl(image) : null;
+    const additionalImageUrls = await Promise.all(additionalImages.map(getUploadedImageUrl));
 
     const product = await prisma.product.create({
       data: {
@@ -67,6 +82,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
         collectionSlug: collectionSlug.trim(),
         stock: parseInt(stock, 10) || 0,
         imageUrl,
+        additionalImages: additionalImageUrls,
       },
       include: { collection: true },
     });
@@ -102,6 +118,11 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       return;
     }
 
+    const { image, additionalImages } = getProductImageFiles(req);
+    const additionalImageUrls = additionalImages.length
+      ? await Promise.all(additionalImages.map(getUploadedImageUrl))
+      : undefined;
+
     const product = await prisma.product.update({
       where: { id: productId },
       data: {
@@ -110,7 +131,8 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
         price: parsedPrice,
         stock: parsedStock,
         collectionSlug: collection.slug,
-        ...(req.file ? { imageUrl: await getUploadedImageUrl(req.file) } : {}),
+        ...(image ? { imageUrl: await getUploadedImageUrl(image) } : {}),
+        ...(additionalImageUrls ? { additionalImages: additionalImageUrls } : {}),
       },
       include: { collection: true },
     });

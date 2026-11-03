@@ -8,6 +8,7 @@ export interface ApiProduct {
   description: string;
   price: number;
   imageUrl: string | null;
+  additionalImages?: string[];
   collectionSlug: string | null;
   collection?: { name: string } | null;
   stock: number;
@@ -40,7 +41,7 @@ export function mapApiProduct(product: ApiProduct): Product {
     collection: product.collectionSlug ?? '',
     description: product.description,
     price: Number(product.price) || 0,
-    images: [product.imageUrl || '/h1-featured.png'],
+    images: [product.imageUrl || '/h1-featured.png', ...(product.additionalImages ?? [])],
     scent: 'Hand-poured',
     fragranceNotes: {
       top: 'Not specified',

@@ -12,8 +12,26 @@ router.get('/', getProducts);
 router.get('/:id', getProductById);
 
 // POST a new product (Admin only, handles image upload)
-router.post('/', protect, admin, upload.single('image'), createProduct);
-router.put('/:id', protect, admin, upload.single('image'), updateProduct);
+router.post(
+  '/',
+  protect,
+  admin,
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'additionalImages', maxCount: 3 },
+  ]),
+  createProduct,
+);
+router.put(
+  '/:id',
+  protect,
+  admin,
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'additionalImages', maxCount: 3 },
+  ]),
+  updateProduct,
+);
 router.delete('/:id', protect, admin, deleteProduct);
 
 export default router;

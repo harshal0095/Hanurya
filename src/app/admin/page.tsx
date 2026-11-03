@@ -52,10 +52,13 @@ export default function AdminDashboardPage() {
   const [stock, setStock] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
+  const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const additionalImagesInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const fetchStats = async () => {
@@ -139,6 +142,19 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length > 3) {
+      setMessage('You can upload up to 3 extra images.');
+      e.target.value = '';
+      return;
+    }
+
+    setAdditionalImages(files);
+    setAdditionalImagePreviews(files.map((file) => URL.createObjectURL(file)));
+    setMessage('');
+  };
+
   const handleAddCollection = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsCreatingCollection(true);
@@ -199,6 +215,8 @@ export default function AdminDashboardPage() {
     setStock(String(product.stock));
     setImage(null);
     setImagePreview(product.imageUrl);
+    setAdditionalImages([]);
+    setAdditionalImagePreviews(product.additionalImages ?? []);
     setMessage('');
     setActiveMenu('products');
   };
@@ -212,7 +230,10 @@ export default function AdminDashboardPage() {
     setStock('');
     setImage(null);
     setImagePreview(null);
+    setAdditionalImages([]);
+    setAdditionalImagePreviews([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (additionalImagesInputRef.current) additionalImagesInputRef.current.value = '';
   };
 
   const handleDeleteProduct = async (product: ApiProduct) => {
@@ -243,6 +264,9 @@ export default function AdminDashboardPage() {
       if (image) {
         formData.append('image', image);
       }
+      additionalImages.forEach((additionalImage) => {
+        formData.append('additionalImages', additionalImage);
+      });
 
       const productRequest = editingProductId
         ? apiClient.put(`/products/${editingProductId}`, formData, {
@@ -695,6 +719,43 @@ export default function AdminDashboardPage() {
                           required={!imagePreview && !editingProductId}
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-dark mb-1.5">
+                        Extra Images (Optional, up to 3)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => additionalImagesInputRef.current?.click()}
+                        className="w-full rounded-xl border-2 border-dashed border-dark/20 bg-primary/30 px-4 py-6 text-sm text-dark/60 transition-colors hover:bg-primary/50"
+                      >
+                        <Upload className="mx-auto mb-2 h-6 w-6 text-dark/40" />
+                        Select up to 3 additional images
+                        <span className="mt-1 block text-xs text-dark/40">PNG, JPG, or WebP up to 5MB each</span>
+                      </button>
+                      <input
+                        type="file"
+                        ref={additionalImagesInputRef}
+                        className="hidden"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={handleAdditionalImagesChange}
+                      />
+                      {additionalImagePreviews.length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-3">
+                          {additionalImagePreviews.map((preview, index) => (
+                            <div key={`${preview}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-dark/10">
+                              <Image src={preview} alt={`Extra image ${index + 1} preview`} fill unoptimized className="object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {editingProductId && (
+                        <p className="mt-2 text-xs text-dark/50">
+                          Selecting new images replaces the existing extra images.
+                        </p>
+                      )}
                     </div>
 
                     <div className="pt-4">

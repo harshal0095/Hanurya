@@ -118,6 +118,22 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
                 className="object-cover animate-in fade-in duration-500"
               />
             </div>
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setActiveImage(index)}
+                    aria-label={`View product image ${index + 1}`}
+                    aria-pressed={activeImage === index}
+                    className={`relative aspect-square overflow-hidden border ${activeImage === index ? 'border-dark' : 'border-dark/10'}`}
+                  >
+                    <Image src={image} alt={`${product.name} image ${index + 1}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
