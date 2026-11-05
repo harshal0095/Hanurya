@@ -27,13 +27,13 @@ Configure values through your hosting provider's environment/secret manager. Nev
    - For a manually created Web Service, set **Build Command** to `npm ci --include=dev && npx prisma generate && npm run build`. The development dependencies include TypeScript declarations required by the build; `--include=dev` ensures Render installs them even when `NODE_ENV=production`.
    - `backend/.npmrc` also sets `include=dev`, so the current dashboard command `npm install; npm run build` installs the TypeScript declarations even if Render retains that command.
    - Set **Start Command** to `npm run migrate:deploy && npm start` so database migrations are applied before the API starts.
-3. Deploy the Next.js project to Vercel with the repository root as the project root. Optionally set `NEXT_PUBLIC_API_URL` to the actual Render service URL ending in `/api`; if omitted, the frontend uses `https://hanurya-api.onrender.com/api`, matching the service name in `render.yaml`. Also set `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`. These `NEXT_PUBLIC_` values are public; never place API keys or secrets in them. Set any overrides before the production build.
+3. Deploy the Next.js project to Vercel with the repository root as the project root. Set `NEXT_PUBLIC_API_URL` to the actual Render service URL ending in `/api` (for this deployment: `https://hanurya-1.onrender.com/api`). If omitted, the frontend uses that URL by default. Also set `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`. These `NEXT_PUBLIC_` values are public; never place API keys or secrets in them. Set any overrides before the production build.
 4. After Vercel assigns the site's URL, set that exact HTTPS origin in Render's `CLIENT_URLS`, save, and redeploy the API. Do not use `*`.
 5. Verify the Render health check is green, then test registration, product loading, UPI quote, order submission, admin payment review, and status updates before sharing the website.
 
 ### Frontend
 
-- `NEXT_PUBLIC_API_URL` (optional): HTTPS API base URL, including `/api` (for example `https://api.example.com/api`). Defaults to `https://hanurya-api.onrender.com/api` in production and `http://localhost:5000/api` in development.
+- `NEXT_PUBLIC_API_URL` (optional): HTTPS API base URL, including `/api` (for example `https://api.example.com/api`). Defaults to `https://hanurya-1.onrender.com/api` in production and `http://localhost:5000/api` in development.
 - `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_PAYEE_NAME`: public merchant details shown in the manual UPI checkout. Set them to the active UPI ID and its bank-verified account name before building/deploying. Checkout does not substitute a default account or name if either value is missing or invalid.
 - The value is public and must not contain secrets.
 - If supplied in production, it must be a valid HTTPS API URL ending in `/api`; production never silently falls back to `localhost`.
