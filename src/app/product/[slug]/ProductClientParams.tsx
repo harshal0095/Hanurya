@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, Heart, Share2, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -147,34 +147,22 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-serif text-dark mb-4">{product.name}</h1>
 
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="text-2xl font-medium">
-                  {product.salePrice ? (
-                    <div className="flex items-center space-x-3">
-                      <span className="text-accent">₹{product.salePrice}</span>
-                      <span className="text-dark/40 line-through text-lg">₹{product.price}</span>
-                    </div>
-                  ) : (
-                    <span>₹{product.price}</span>
-                  )}
-                </div>
-
-                <div className="w-px h-6 bg-dark/20"></div>
-
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'text-accent fill-accent' : 'text-dark/20'}`}
-                    />
-                  ))}
-                  <span className="text-xs text-dark/60 ml-2">({product.reviewCount})</span>
-                </div>
+              <div className="mb-5 text-2xl font-medium tracking-tight">
+                {product.salePrice ? (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-accent">₹{product.salePrice}</span>
+                    <span className="text-dark/40 line-through text-lg">₹{product.price}</span>
+                  </div>
+                ) : (
+                  <span className="text-dark">₹{product.price}</span>
+                )}
               </div>
 
-              <p className="text-dark/70 text-lg leading-relaxed mb-8">
-                {product.description}
-              </p>
+              <div className="mb-8 border-l-2 border-accent/60 pl-5">
+                <p className="max-w-xl whitespace-pre-line text-[15px] leading-7 text-dark/75 antialiased sm:text-base">
+                  {product.description}
+                </p>
+              </div>
             </div>
 
             {/* Selection */}
