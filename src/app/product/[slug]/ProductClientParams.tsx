@@ -259,7 +259,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
                 <p>Expected burn time is {product.burnTime}. For best results, trim wick to 1/4" before each use. Allow the melt pool to reach the edges of the jar to prevent tunneling. Do not burn for more than 4 hours at a time.</p>
               </AccordionItem>
               <AccordionItem title="Shipping & Returns">
-                <p>Free standard shipping on all orders over ₹100. We offer a 30-day return policy for unused candles in their original packaging.</p>
+                <p>Free shipping on orders of ₹1,999 or more. We offer a 7-day return policy for unused candles in their original packaging.</p>
               </AccordionItem>
             </div>
 
