@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Plus, Minus, ChevronDown, ChevronUp, Maximize2, X } from 'lucide-react';
 import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -39,6 +39,7 @@ function AccordionItem({ title, children, defaultOpen = false }: AccordionItemPr
 export default function ProductClientParams({ product, relatedProducts }: { product: Product, relatedProducts: Product[] }) {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [availableStock, setAvailableStock] = useState(Math.max(0, product.stock));
   const [stockRefreshFailed, setStockRefreshFailed] = useState(false);
 
@@ -80,6 +81,23 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
     };
   }, [product.id]);
 
+  useEffect(() => {
+    if (!isImageViewerOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsImageViewerOpen(false);
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isImageViewerOpen]);
+
   const toggleWishlist = () => {
     if (isWishlisted) {
       removeFromWishlist(product.id);
@@ -110,42 +128,55 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
 
           {/* Images */}
           <div className="w-full lg:w-1/2">
-            <div className="relative aspect-[3/4] bg-cream mb-4">
-              <Image
-                src={product.images[activeImage]}
-                alt={product.name}
-                fill
-                className="object-cover animate-in fade-in duration-500"
-              />
-            </div>
-            {product.images.length > 1 && (
-              <div
-                role="group"
-                aria-label="Product images"
-                className="flex gap-3 overflow-x-auto overscroll-x-contain pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible"
+            <div className="mx-auto w-full max-w-[520px]">
+              <button
+                type="button"
+                onClick={() => setIsImageViewerOpen(true)}
+                aria-label={`Open ${product.name} image in full screen`}
+                className="relative mb-4 block aspect-[4/5] w-full overflow-hidden bg-cream cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
               >
-                {product.images.map((image, index) => (
-                  <button
-                    key={`${image}-${index}`}
-                    type="button"
-                    onClick={() => setActiveImage(index)}
-                    aria-label={`View image ${index + 1} of ${product.images.length} for ${product.name}`}
-                    aria-pressed={activeImage === index}
-                    className={`relative aspect-square w-20 shrink-0 overflow-hidden border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:w-full sm:shrink ${
-                      activeImage === index ? 'border-2 border-dark' : 'border-dark/10 hover:border-dark/40'
-                    }`}
-                  >
-                    <Image src={image} alt={`${product.name} image ${index + 1}`} fill className="object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+                <Image
+                  src={product.images[activeImage]}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 520px"
+                  className="object-contain animate-in fade-in duration-500"
+                />
+                <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-dark shadow-sm">
+                  <Maximize2 className="h-4 w-4" />
+                </span>
+              </button>
+              {product.images.length > 1 && (
+                <div
+                  role="group"
+                  aria-label="Product images"
+                  className="flex gap-3 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory"
+                >
+                  {product.images.map((image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() => setActiveImage(index)}
+                      aria-label={`View image ${index + 1} of ${product.images.length} for ${product.name}`}
+                      aria-pressed={activeImage === index}
+                      className={`relative aspect-square w-20 shrink-0 snap-start overflow-hidden rounded-sm border-2 bg-cream transition-colors sm:w-24 ${
+                        activeImage === index ? 'border-dark' : 'border-dark/10 hover:border-dark/40'
+                      }`}
+                    >
+                      <Image src={image} alt={`${product.name} image ${index + 1}`} fill sizes="96px" className="object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Product Info */}
           <div className="w-full lg:w-1/2 flex flex-col pt-4">
             <div className="mb-8">
-              <h1 className="text-4xl md:text-5xl font-serif text-dark mb-4">{product.name}</h1>
+              <h1 className="mb-5 max-w-2xl font-serif text-[2rem] leading-[1.12] tracking-[-0.02em] text-dark sm:text-[2.5rem] lg:text-[2.75rem]">
+                {product.name}
+              </h1>
 
               <div className="mb-5 text-2xl font-medium tracking-tight">
                 {product.salePrice ? (
@@ -234,6 +265,37 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
           </div>
         </div>
       </div>
+
+      {isImageViewerOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} image viewer`}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
+          onClick={() => setIsImageViewerOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setIsImageViewerOpen(false)}
+            aria-label="Close image viewer"
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-dark shadow-lg"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div
+            className="relative h-[88vh] w-full max-w-5xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Image
+              src={product.images[activeImage]}
+              alt={product.name}
+              fill
+              sizes="100vw"
+              className="object-contain"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
