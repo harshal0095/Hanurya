@@ -110,7 +110,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
 
           {/* Images */}
           <div className="w-full lg:w-1/2">
-            <div className="relative aspect-[3/4] bg-cream mb-4 sticky top-24">
+            <div className="relative aspect-[3/4] bg-cream mb-4">
               <Image
                 src={product.images[activeImage]}
                 alt={product.name}
@@ -119,15 +119,21 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
               />
             </div>
             {product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
+              <div
+                role="group"
+                aria-label="Product images"
+                className="flex gap-3 overflow-x-auto overscroll-x-contain pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible"
+              >
                 {product.images.map((image, index) => (
                   <button
                     key={`${image}-${index}`}
                     type="button"
                     onClick={() => setActiveImage(index)}
-                    aria-label={`View product image ${index + 1}`}
+                    aria-label={`View image ${index + 1} of ${product.images.length} for ${product.name}`}
                     aria-pressed={activeImage === index}
-                    className={`relative aspect-square overflow-hidden border ${activeImage === index ? 'border-dark' : 'border-dark/10'}`}
+                    className={`relative aspect-square w-20 shrink-0 overflow-hidden border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:w-full sm:shrink ${
+                      activeImage === index ? 'border-2 border-dark' : 'border-dark/10 hover:border-dark/40'
+                    }`}
                   >
                     <Image src={image} alt={`${product.name} image ${index + 1}`} fill className="object-cover" />
                   </button>

@@ -28,23 +28,26 @@ model Product {
   price          Float
   imageUrl       String?
   additionalImages String[]    @default([])
+  fragranceTop   String      @default("Not specified")
+  fragranceHeart String      @default("Not specified")
+  fragranceBase  String      @default("Not specified")
   collectionSlug String?
   collection     Collection? @relation(fields: [collectionSlug], references: [slug], onDelete: SetNull)
   stock          Int         @default(0)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   orderItems     OrderItem[]
-  cartItems     CartItem[]
-  wishlistItems WishlistItem[]
+  cartItems      CartItem[]
+  wishlistItems    WishlistItem[]
 }
 
 model CartItem {
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity  Int
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@id([userId, productId])
   @@index([productId])
@@ -52,10 +55,10 @@ model CartItem {
 
 model WishlistItem {
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@id([userId, productId])
   @@index([productId])

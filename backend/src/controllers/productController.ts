@@ -55,7 +55,7 @@ export const getProductById = async (req: Request, res: Response, next: NextFunc
 // @access  Private/Admin
 export const createProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, description, price, stock, collectionSlug } = req.body;
+    const { name, description, price, stock, collectionSlug, fragranceTop, fragranceHeart, fragranceBase } = req.body;
 
     if (typeof collectionSlug !== 'string' || !collectionSlug.trim()) {
       res.status(400).json({ message: 'A collection is required' });
@@ -83,6 +83,9 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
         stock: parseInt(stock, 10) || 0,
         imageUrl,
         additionalImages: additionalImageUrls,
+        fragranceTop: String(fragranceTop || '').trim() || 'Not specified',
+        fragranceHeart: String(fragranceHeart || '').trim() || 'Not specified',
+        fragranceBase: String(fragranceBase || '').trim() || 'Not specified',
       },
       include: { collection: true },
     });
@@ -102,7 +105,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       return;
     }
 
-    const { name, description, price, stock, collectionSlug } = req.body;
+    const { name, description, price, stock, collectionSlug, fragranceTop, fragranceHeart, fragranceBase } = req.body;
     const collection = await prisma.collection.findUnique({
       where: { slug: String(collectionSlug || '').trim(), isActive: true },
     });
@@ -131,6 +134,9 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
         price: parsedPrice,
         stock: parsedStock,
         collectionSlug: collection.slug,
+        fragranceTop: String(fragranceTop || '').trim() || 'Not specified',
+        fragranceHeart: String(fragranceHeart || '').trim() || 'Not specified',
+        fragranceBase: String(fragranceBase || '').trim() || 'Not specified',
         ...(image ? { imageUrl: await getUploadedImageUrl(image) } : {}),
         ...(additionalImageUrls ? { additionalImages: additionalImageUrls } : {}),
       },

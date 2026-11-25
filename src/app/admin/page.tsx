@@ -43,6 +43,9 @@ export default function AdminDashboardPage() {
   // Product Form State
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [fragranceTop, setFragranceTop] = useState('');
+  const [fragranceHeart, setFragranceHeart] = useState('');
+  const [fragranceBase, setFragranceBase] = useState('');
   const [collectionSlug, setCollectionSlug] = useState('');
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDescription, setNewCollectionDescription] = useState('');
@@ -210,6 +213,9 @@ export default function AdminDashboardPage() {
     setEditingProductId(product.id);
     setName(product.name);
     setDescription(product.description);
+    setFragranceTop(product.fragranceTop === 'Not specified' ? '' : product.fragranceTop || '');
+    setFragranceHeart(product.fragranceHeart === 'Not specified' ? '' : product.fragranceHeart || '');
+    setFragranceBase(product.fragranceBase === 'Not specified' ? '' : product.fragranceBase || '');
     setCollectionSlug(product.collectionSlug || '');
     setPrice(String(product.price));
     setStock(String(product.stock));
@@ -225,6 +231,9 @@ export default function AdminDashboardPage() {
     setEditingProductId(null);
     setName('');
     setDescription('');
+    setFragranceTop('');
+    setFragranceHeart('');
+    setFragranceBase('');
     setCollectionSlug('');
     setPrice('');
     setStock('');
@@ -258,6 +267,9 @@ export default function AdminDashboardPage() {
       const formData = new FormData();
       formData.append('name', name);
       formData.append('description', description);
+      formData.append('fragranceTop', fragranceTop);
+      formData.append('fragranceHeart', fragranceHeart);
+      formData.append('fragranceBase', fragranceBase);
       formData.append('collectionSlug', collectionSlug);
       formData.append('price', price);
       formData.append('stock', stock);
@@ -653,6 +665,33 @@ export default function AdminDashboardPage() {
                         rows={4}
                         className="w-full rounded-xl border border-dark/10 bg-primary/30 px-4 py-3 text-sm text-dark placeholder:text-dark/40 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all resize-none"
                       ></textarea>
+                    </div>
+
+                    <div>
+                      <p className="mb-3 text-sm font-medium text-dark">Fragrance Notes</p>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Input
+                          label="Top"
+                          placeholder="E.g., Bergamot"
+                          value={fragranceTop}
+                          onChange={(e) => setFragranceTop(e.target.value)}
+                          className="bg-primary/30 border-dark/10"
+                        />
+                        <Input
+                          label="Heart"
+                          placeholder="E.g., Rose"
+                          value={fragranceHeart}
+                          onChange={(e) => setFragranceHeart(e.target.value)}
+                          className="bg-primary/30 border-dark/10"
+                        />
+                        <Input
+                          label="Base"
+                          placeholder="E.g., Sandalwood"
+                          value={fragranceBase}
+                          onChange={(e) => setFragranceBase(e.target.value)}
+                          className="bg-primary/30 border-dark/10"
+                        />
+                      </div>
                     </div>
 
                     <div>
