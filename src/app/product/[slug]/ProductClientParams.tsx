@@ -128,7 +128,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
 
           {/* Images */}
           <div className="w-full lg:w-1/2">
-            <div className="mx-auto w-full max-w-[420px]">
+            <div className="mx-auto w-full max-w-[470px]">
               <button
                 type="button"
                 onClick={() => setIsImageViewerOpen(true)}
@@ -139,7 +139,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
                   src={product.images[activeImage]}
                   alt={product.name}
                   fill
-                  sizes="(max-width: 1024px) 100vw, 420px"
+                  sizes="(max-width: 1024px) 100vw, 470px"
                   className="object-contain animate-in fade-in duration-500"
                 />
                 <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-dark shadow-sm">
