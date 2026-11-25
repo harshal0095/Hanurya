@@ -667,8 +667,11 @@ export default function AdminDashboardPage() {
                       ></textarea>
                     </div>
 
-                    <div>
-                      <p className="mb-3 text-sm font-medium text-dark">Fragrance Notes</p>
+                    <div className="rounded-xl border border-accent/20 bg-primary/20 p-4 sm:p-5">
+                      <div className="mb-4">
+                        <p className="font-serif text-lg font-semibold text-dark">Fragrance Notes</p>
+                        <p className="mt-1 text-xs text-dark/50">Add the Top, Heart and Base fragrance notes.</p>
+                      </div>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <Input
                           label="Top"
