@@ -128,18 +128,18 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
 
           {/* Images */}
           <div className="w-full lg:w-1/2">
-            <div className="mx-auto w-full max-w-[520px]">
+            <div className="mx-auto w-full max-w-[420px]">
               <button
                 type="button"
                 onClick={() => setIsImageViewerOpen(true)}
                 aria-label={`Open ${product.name} image in full screen`}
-                className="relative mb-4 block aspect-[4/5] w-full overflow-hidden bg-cream cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                className="relative mb-4 block aspect-square w-full overflow-hidden rounded-sm bg-cream cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
               >
                 <Image
                   src={product.images[activeImage]}
                   alt={product.name}
                   fill
-                  sizes="(max-width: 1024px) 100vw, 520px"
+                  sizes="(max-width: 1024px) 100vw, 420px"
                   className="object-contain animate-in fade-in duration-500"
                 />
                 <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-dark shadow-sm">
@@ -159,7 +159,7 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
                       onClick={() => setActiveImage(index)}
                       aria-label={`View image ${index + 1} of ${product.images.length} for ${product.name}`}
                       aria-pressed={activeImage === index}
-                      className={`relative aspect-square w-20 shrink-0 snap-start overflow-hidden rounded-sm border-2 bg-cream transition-colors sm:w-24 ${
+                      className={`relative aspect-square w-16 shrink-0 snap-start overflow-hidden rounded-sm border-2 bg-cream transition-colors sm:w-20 ${
                         activeImage === index ? 'border-dark' : 'border-dark/10 hover:border-dark/40'
                       }`}
                     >
@@ -174,11 +174,12 @@ export default function ProductClientParams({ product, relatedProducts }: { prod
           {/* Product Info */}
           <div className="w-full lg:w-1/2 flex flex-col pt-4">
             <div className="mb-8">
-              <h1 className="mb-5 max-w-2xl font-serif text-[2rem] leading-[1.12] tracking-[-0.02em] text-dark sm:text-[2.5rem] lg:text-[2.75rem]">
+              <h1 className="mb-5 max-w-2xl font-serif text-[1.75rem] font-bold leading-tight tracking-[-0.015em] text-dark sm:text-[2rem] lg:text-[2.25rem]">
                 {product.name}
               </h1>
 
-              <div className="mb-5 text-2xl font-medium tracking-tight">
+              <div className="mb-5 flex items-center gap-3 text-[1.6rem] font-bold tracking-tight">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-dark/50">Price</span>
                 {product.salePrice ? (
                   <div className="flex items-center space-x-3">
                     <span className="text-accent">₹{product.salePrice}</span>
