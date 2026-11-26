@@ -183,7 +183,7 @@ export default function RegisterPage() {
                 Terms of Service
               </Link>
               {' '}and{' '}
-              <Link href="#" className="font-medium text-dark hover:text-accent transition-colors underline decoration-dark/30 underline-offset-4">
+              <Link href="/privacy" className="font-medium text-dark hover:text-accent transition-colors underline decoration-dark/30 underline-offset-4">
                 Privacy Policy
               </Link>
             </label>
