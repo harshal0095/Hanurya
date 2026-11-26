@@ -41,7 +41,7 @@ export default function Footer() {
             <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-6">Customer Care</h4>
             <ul className="space-y-4 text-sm text-cream/70">
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              <li><Link href="/track" className="hover:text-white transition-colors">Track Order</Link></li>
+              <li><Link href="/orders" className="hover:text-white transition-colors">Track Order</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>

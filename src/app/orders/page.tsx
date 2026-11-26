@@ -27,7 +27,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
-      router.replace('/login');
+      router.replace('/login?returnTo=%2Forders');
       return;
     }
     void fetchOrders();

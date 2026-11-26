@@ -28,8 +28,8 @@ export default function LoginPage() {
         localStorage.setItem('token', response.data.token);
         // Dispatch custom event to update navbar/header
         window.dispatchEvent(new Event('auth-change'));
-        // Redirect to profile
-        router.push('/profile');
+        const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+        router.push(returnTo === '/orders' ? returnTo : '/profile');
       }
     } catch (error: unknown) {
       const responseMessage = axios.isAxiosError<{ message?: string }>(error) ? error.response?.data?.message : undefined;

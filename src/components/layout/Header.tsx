@@ -149,7 +149,7 @@ export default function Header() {
                             <li><button onClick={() => setIsCartOpen(true)} className="hover:text-accent transition-colors">Cart</button></li>
                             <li><Link href="/checkout" className="hover:text-accent transition-colors">Checkout</Link></li>
                             <li><Link href="/wishlist" className="hover:text-accent transition-colors">Wishlist</Link></li>
-                            <li><Link href="/order-tracking" className="hover:text-accent transition-colors">Order Tracking</Link></li>
+                            <li><Link href="/orders" className="hover:text-accent transition-colors">Order Tracking</Link></li>
                             <li><Link href={isLoggedIn ? "/profile" : "/login"} className="hover:text-accent transition-colors">{isLoggedIn ? "My Profile" : "Login & register"}</Link></li>
                           </ul>
                         </div>
