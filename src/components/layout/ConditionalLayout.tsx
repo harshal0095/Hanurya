@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import AnnouncementBar from './AnnouncementBar';
+import FirstEntryLoader from './FirstEntryLoader';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   return (
     <>
+      <FirstEntryLoader />
       <AnnouncementBar />
       <Header />
       <main className="flex-grow">{children}</main>
